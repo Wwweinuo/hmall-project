@@ -1,7 +1,7 @@
 package com.hmall.trade.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.hmall.api.client.ICartService;
+import com.hmall.api.client.CartClient;
 import com.hmall.api.client.ItemClient;
 import com.hmall.api.dto.ItemDTO;
 import com.hmall.api.dto.OrderDetailDTO;
@@ -39,7 +39,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     private final ItemClient itemService;
     private final IOrderDetailService detailService;
-    private final ICartService cartService;
+    private final CartClient cartService;
 
     @Override
     @Transactional
