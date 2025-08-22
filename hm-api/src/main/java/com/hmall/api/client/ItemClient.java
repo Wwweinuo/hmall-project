@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collection;
 import java.util.List;
 
-@FeignClient("item-service")
+@FeignClient(value = "item-service", path = "/items")
 public interface ItemClient {
 
-    @GetMapping("/items")
+    @GetMapping
     List<ItemDTO> queryItemByIds(@RequestParam("ids") Collection<Long> ids);
 
     @PutMapping("/stock/deduct")

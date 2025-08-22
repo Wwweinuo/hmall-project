@@ -10,11 +10,11 @@ import javax.validation.Valid;
 import java.util.Collection;
 import java.util.List;
 
-@FeignClient("cart-service")
+@FeignClient(value = "cart-service", path = "/carts")
 public interface CartClient {
 
     @DeleteMapping
-    public void deleteCartItemByIds(@RequestParam("ids") Collection<Long> ids);
+    public void deleteCartItemByIds(@RequestParam("ids") List<Long> ids);
 
     @PostMapping
     public void addItem2Cart(@Valid @RequestBody CartFormDTO cartFormDTO);
