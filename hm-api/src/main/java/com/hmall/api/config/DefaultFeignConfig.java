@@ -27,7 +27,7 @@ public class DefaultFeignConfig {
                     return;
                 }
                 // 不为空则保存到请求头中
-                requestTemplate.header("user", String.valueOf(userId));
+                requestTemplate.header("user-info", String.valueOf(userId));
             }
         };
     }
