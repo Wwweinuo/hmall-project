@@ -3,6 +3,7 @@ package com.hmall.search.controller;
 
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.hmall.common.domain.PageDTO;
 import com.hmall.search.domain.dto.ItemDTO;
@@ -20,16 +21,22 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Api(tags = "搜索相关接口")
 @RestController
@@ -63,7 +70,7 @@ public class SearchController {
 
     @ApiOperation("搜索商品")
     @GetMapping("/list")
-    public PageDTO<ItemDTO> search(ItemPageQuery query) {
+    public PageDTO<ItemDTO> search(ItemPageQuery query) throws IOException {
 //        // 分页查询
 //        Page<Item> result = itemService.lambdaQuery()
 //                .like(StrUtil.isNotBlank(query.getKey()), Item::getName, query.getKey())
@@ -74,7 +81,47 @@ public class SearchController {
 //                .page(query.toMpPage("update_time", false));
 //        // 封装并返回
 //        return PageDTO.of(result, ItemDTO.class);
-        return null;
+        log.info("query: " + query);
+        // 1.配置查询参数
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        // name模糊查询
+        if (StrUtil.isNotBlank(query.getKey())) {
+            boolQuery.must(QueryBuilders.matchQuery("name", query.getKey()));
+        }
+        // brand、category、status精确匹配
+        if (StrUtil.isNotBlank(query.getBrand())) {
+            boolQuery.filter(QueryBuilders.termQuery("brand.keyword", query.getBrand()));
+        }
+        if (StrUtil.isNotBlank(query.getCategory())) {
+            boolQuery.filter(QueryBuilders.termQuery("category.keyword", query.getCategory()));
+        }
+//        boolQuery.must(QueryBuilders.termQuery("isAD", false));
+        // price范围查询
+        if (query.getMaxPrice() != null) {
+            boolQuery.filter(QueryBuilders.rangeQuery("price")
+                    .gte(query.getMinPrice() == null ? 0 : query.getMinPrice())
+                    .lte(query.getMaxPrice()));
+        }
+        // 2.构建分页+排序
+        SearchSourceBuilder sourceBuilder = SearchSourceBuilder.searchSource()
+                .query(boolQuery)
+                .from(query.getPageNo() - 1)
+                .size(query.getPageSize())
+                .sort("updateTime", SortOrder.DESC);
+        // 3.构建请求
+        SearchRequest request = new SearchRequest("items").source(sourceBuilder);
+        // 4.发送请求
+        SearchResponse response =client.search(request, RequestOptions.DEFAULT);
+        log.info("response: " + response);
+        // 5.解析结果
+        List<ItemDTO> records = Arrays.stream(response.getHits().getHits())
+                .map(hit -> {
+                    return JSONUtil.toBean(hit.getSourceAsString(), ItemDTO.class);
+                })
+                .collect(Collectors.toList());
+        long total = response.getHits().getTotalHits().value;
+        // 6.封装分页对象
+        return new PageDTO<>(total, total / query.getPageSize(), records);
     }
 
 }
