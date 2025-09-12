@@ -1,21 +1,21 @@
-12:25:20:001  INFO 11388 --- [main] com.hmall.HMallApplication               : Starting HMallApplication using Java 11.0.15.1 on zjy with PID 11388 (D:\Code\springCloud_project\hmall\hm-service\target\classes started by ZZZjy学习 in D:\Code\springCloud_project\hmall)
-12:25:20:011 DEBUG 11388 --- [main] com.hmall.HMallApplication               : Running with Spring Boot v2.7.12, Spring v5.3.27
-12:25:20:011  INFO 11388 --- [main] com.hmall.HMallApplication               : The following 1 profile is active: "local"
-12:25:20:749  INFO 11388 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
-12:25:20:752  INFO 11388 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
-12:25:20:780  INFO 11388 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 14 ms. Found 0 Redis repository interfaces.
-12:25:21:204  INFO 11388 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
-12:25:21:212  INFO 11388 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-12:25:21:212  INFO 11388 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.75]
-12:25:21:359  INFO 11388 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-12:25:21:359  INFO 11388 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1300 ms
-12:25:23:779  INFO 11388 --- [main] pertySourcedRequestMappingHandlerMapping : Mapped URL path [/v2/api-docs] onto method [springfox.documentation.swagger2.web.Swagger2ControllerWebMvc#getDocumentation(String, HttpServletRequest)]
-12:25:24:119  WARN 11388 --- [main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'; nested exception is org.springframework.boot.web.server.PortInUseException: Port 8080 is already in use
-12:25:24:141  INFO 11388 --- [main] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
-12:25:24:151  INFO 11388 --- [main] ConditionEvaluationReportLoggingListener : 
+09:58:20:406  INFO 20444 --- [main] com.hmall.HMallApplication               : Starting HMallApplication using Java 11.0.15.1 on zjy with PID 20444 (D:\Code\springCloud_project\hmall\hm-service\target\classes started by ZZZjy学习 in D:\Code\springCloud_project\hmall)
+09:58:20:413 DEBUG 20444 --- [main] com.hmall.HMallApplication               : Running with Spring Boot v2.7.12, Spring v5.3.27
+09:58:20:414  INFO 20444 --- [main] com.hmall.HMallApplication               : The following 1 profile is active: "local"
+09:58:21:395  INFO 20444 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+09:58:21:399  INFO 20444 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+09:58:21:439  INFO 20444 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 19 ms. Found 0 Redis repository interfaces.
+09:58:21:969  INFO 20444 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+09:58:21:982  INFO 20444 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+09:58:21:983  INFO 20444 --- [main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.75]
+09:58:22:159  INFO 20444 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+09:58:22:159  INFO 20444 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1696 ms
+09:58:25:978  INFO 20444 --- [main] pertySourcedRequestMappingHandlerMapping : Mapped URL path [/v2/api-docs] onto method [springfox.documentation.swagger2.web.Swagger2ControllerWebMvc#getDocumentation(String, HttpServletRequest)]
+09:58:26:403  WARN 20444 --- [main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'; nested exception is org.springframework.boot.web.server.PortInUseException: Port 8080 is already in use
+09:58:26:430  INFO 20444 --- [main] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
+09:58:26:443  INFO 20444 --- [main] ConditionEvaluationReportLoggingListener : 
 
 Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
-12:25:24:167 ERROR 11388 --- [main] o.s.b.d.LoggingFailureAnalysisReporter   : 
+09:58:26:462 ERROR 20444 --- [main] o.s.b.d.LoggingFailureAnalysisReporter   : 
 
 ***************************
 APPLICATION FAILED TO START

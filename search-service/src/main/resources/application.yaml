@@ -1,0 +1,11 @@
+server:
+  port: 8086
+hm:
+  db:
+    database: hm-item
+  swagger:
+    title: 搜索服务接口文档
+    package: com.hmall.search.controller
+  es: # es配置
+    host: 192.168.213.129
+    port: 9200
