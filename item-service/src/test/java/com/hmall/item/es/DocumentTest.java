@@ -7,6 +7,7 @@ import com.hmall.item.domain.po.Item;
 import com.hmall.item.domain.po.ItemDoc;
 import com.hmall.item.service.IItemService;
 import org.apache.http.HttpHost;
+import org.apache.lucene.index.Term;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
@@ -21,7 +22,10 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,10 +78,19 @@ public class DocumentTest {
         SearchResponse response = client.search(request, RequestOptions.DEFAULT);
         System.out.println("response: " + response);
         // 解析聚合结果
-
+        Aggregations aggregations = response.getAggregations();
         // 获取品牌聚合
+        Terms brandTerms = aggregations.get("brand_agg");
         // 获取聚合中的桶
-        // 获取桶中的key
+        List<? extends Terms.Bucket> buckets = brandTerms.getBuckets();
+        for (Terms.Bucket bucket : buckets) {
+            // 获取桶中的key
+            String brand = bucket.getKeyAsString();
+            System.out.println("品牌：" + brand);
+            long docCount = bucket.getDocCount();
+            System.out.println("品牌文档数：" + docCount);
+        }
+
     }
 
 

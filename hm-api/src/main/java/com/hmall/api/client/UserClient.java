@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "user-service")
 public interface UserClient {
 
-    @PutMapping("/money/deduct")
+    @PutMapping("/users/money/deduct")
     public void deductMoney(@RequestParam("pw") String pw, @RequestParam("amount") Integer amount);
 
-    @PostMapping("login")
+    @PostMapping("/users/login")
     public UserLoginVO login(@RequestBody @Validated LoginFormDTO loginFormDTO);
 }
