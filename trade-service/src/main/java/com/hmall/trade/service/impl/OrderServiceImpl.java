@@ -16,14 +16,14 @@ import com.hmall.trade.service.IOrderDetailService;
 import com.hmall.trade.service.IOrderService;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -36,11 +36,13 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements IOrderService {
 
     private final ItemClient itemService;
     private final IOrderDetailService detailService;
     private final CartClient cartService;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     @GlobalTransactional
@@ -75,8 +77,16 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         List<OrderDetail> details = buildDetails(order.getId(), items, itemNumMap);
         detailService.saveBatch(details);
 
-        // 3.清理购物车商品
-        cartService.deleteCartItemByIds(new ArrayList<>(itemIds));
+        // 3.清理购物车商品，采用使用消息队列异步执行
+        Map<String, Object> clearCartMessage = new HashMap<>();
+        clearCartMessage.put("userId", UserContext.getUser());
+        clearCartMessage.put("itemIds", itemIds);
+        try {
+            rabbitTemplate.convertAndSend("trade.topic", "order.create", clearCartMessage);
+        } catch (AmqpException e) {
+            log.error("清空购物车消息发送失败，用户id：{}，商品id集合：{}", UserContext.getUser(), itemIds, e);
+        }
+//        cartService.deleteCartItemByIds(new ArrayList<>(itemIds));
 
         // 4.扣减库存
         try {
