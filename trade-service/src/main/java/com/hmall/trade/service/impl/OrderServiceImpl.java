@@ -1,14 +1,18 @@
 package com.hmall.trade.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmall.api.client.CartClient;
 import com.hmall.api.client.ItemClient;
+import com.hmall.api.client.PayClient;
 import com.hmall.api.dto.ItemDTO;
 import com.hmall.api.dto.OrderDetailDTO;
 import com.hmall.api.dto.OrderFormDTO;
 import com.hmall.common.exception.BadRequestException;
+import com.hmall.common.utils.BeanUtils;
 import com.hmall.common.utils.UserContext;
 
+import com.hmall.trade.constants.MQConstants;
 import com.hmall.trade.domain.po.Order;
 import com.hmall.trade.domain.po.OrderDetail;
 import com.hmall.trade.mapper.OrderMapper;
@@ -17,10 +21,10 @@ import com.hmall.trade.service.IOrderService;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -40,8 +44,9 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements IOrderService {
 
     private final ItemClient itemService;
-    private final IOrderDetailService detailService;
     private final CartClient cartService;
+    private final PayClient payClient;
+    private final IOrderDetailService detailService;
     private final RabbitTemplate rabbitTemplate;
 
     @Override
@@ -78,8 +83,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         detailService.saveBatch(details);
 
         // 3.清理购物车商品，采用使用消息队列异步执行
+        // TODO 将用户id不明文存入消息中
         Map<String, Object> clearCartMessage = new HashMap<>();
-        clearCartMessage.put("userId", UserContext.getUser());
+//        clearCartMessage.put("userId", UserContext.getUser());
         clearCartMessage.put("itemIds", itemIds);
         try {
             rabbitTemplate.convertAndSend("trade.topic", "order.create", clearCartMessage);
@@ -94,7 +100,20 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         } catch (Exception e) {
             throw new RuntimeException("库存不足！");
         }
+
+        // 5.发送延迟消息，检测订单支付状态
+        rabbitTemplate.convertAndSend(
+                MQConstants.DELAY_EXCHANGE_NAME,
+                MQConstants.DELAY_ORDER_KEY,
+                order.getId(),
+                message -> {
+                    message.getMessageProperties().setDelay(10000);  // TODO 延迟消息应该为15min，这里方便测试设置为10s
+                    return message;
+                }
+        );
+
         return order.getId();
+
     }
 
     @Override
@@ -104,6 +123,32 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         order.setStatus(2);
         order.setPayTime(LocalDateTime.now());
         updateById(order);
+    }
+
+    /**
+     * 取消订单 恢复库存
+     *
+     * @param orderId
+     */
+    @Override
+    @GlobalTransactional
+    public void cancelOrder(Long orderId) {
+        // 1.修改订单状态为已取消
+        lambdaUpdate()
+                .eq(Order::getId, orderId)
+                .eq(Order::getStatus, 1)    // 乐观锁，更新前判断订单是否为待支付状态
+                .set(Order::getStatus, 5)
+                .update();
+        // 2.修改支付状态为取消
+        payClient.updatePayOrderByBizOrderNo(orderId, 2);
+        // 3.恢复库存
+        // 3.1.查询订单详情中的商品id和数量
+        List<OrderDetail> orderDetailList = detailService.lambdaQuery()
+                .eq(OrderDetail::getOrderId, orderId)
+                .list();
+        List<OrderDetailDTO> orderDetailDTOS = BeanUtils.copyList(orderDetailList, OrderDetailDTO.class);
+
+        itemService.restoreStock(orderDetailDTOS);
     }
 
     private List<OrderDetail> buildDetails(Long orderId, List<ItemDTO> items, Map<Long, Integer> numMap) {

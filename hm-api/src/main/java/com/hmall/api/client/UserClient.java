@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "user-service")
+@FeignClient(name = "user-service", path = "/users")
 public interface UserClient {
 
-    @PutMapping("/users/money/deduct")
+    @PutMapping("/money/deduct")
     public void deductMoney(@RequestParam("pw") String pw, @RequestParam("amount") Integer amount);
 
-    @PostMapping("/users/login")
+    @PostMapping("/login")
     public UserLoginVO login(@RequestBody @Validated LoginFormDTO loginFormDTO);
 }

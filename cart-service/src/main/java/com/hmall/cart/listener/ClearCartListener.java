@@ -28,8 +28,8 @@ public class ClearCartListener {
     ))
     public void clearCart(Map<String, Object> message) {
         log.info("清空购物车队列收到的消息：{}", message);
-        Long userId = (Long) message.get("userId");
-        UserContext.setUser(userId);
+//        Long userId = (Long) message.get("userId");
+//        UserContext.setUser(userId);
         List<Long> itemIds = (List<Long>) message.get("itemIds");
         cartService.removeByItemIds(itemIds);
     }

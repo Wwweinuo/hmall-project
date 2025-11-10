@@ -54,11 +54,11 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
     }
 
     @Override
-    @GlobalTransactional
+    @Transactional
     public void tryPayOrderByBalance(PayOrderFormDTO payOrderFormDTO) {
-        // 1.查询支付单
+        // 1.查询订单
         PayOrder po = getById(payOrderFormDTO.getId());
-        // 2.判断状态
+        // 2.判断订单状态
         if(!PayStatus.WAIT_BUYER_PAY.equalsValue(po.getStatus())){
             // 订单不是未支付，状态异常
             throw new BizIllegalException("交易已支付或关闭！");
@@ -76,13 +76,16 @@ public class PayOrderServiceImpl extends ServiceImpl<PayOrderMapper, PayOrder> i
         } catch (Exception e) {
             log.error("支付成功的消息发送失败，支付单id：{}，交易单id：{}", po.getId(), po.getBizOrderNo(), e);
         }
-//        // 5.修改订单状态
-//        Order order = new Order();
-//        order.setId(po.getBizOrderNo());
-//        order.setStatus(2);
-//        order.setPayTime(LocalDateTime.now());
-//        tradeClient.markOrderPaySuccess(po.getBizOrderNo());
     }
+
+    @Override
+    public void updatePayOrderByBizOrderNo(Long bizOrderNo, Integer status) {
+        lambdaUpdate()
+                .eq(PayOrder::getBizOrderNo, bizOrderNo)
+                .set(PayOrder::getStatus, status)
+                .update();
+    }
+
 
     public boolean markPayOrderSuccess(Long id, LocalDateTime successTime) {
         return lambdaUpdate()
